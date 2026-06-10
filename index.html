@@ -944,9 +944,10 @@ main {
 
   main > .page { display: none; animation: pageIn 0.3s ease-out; }
   main > .page.active { display: block; }
-  /* The roster page is a wrapper holding several cards (current game,
-     roster, schedule) — grid + gap keeps them spaced like main does. */
-  main > #rosterPage.active { display: grid; gap: inherit; }
+  /* Roster + fielding pages are wrappers holding several cards —
+     grid + gap keeps them spaced like main does. */
+  main > #rosterPage.active,
+  main > #fieldingPage.active { display: grid; gap: inherit; }
   @keyframes pageIn {
     from { opacity: 0; transform: translateY(8px); }
     to { opacity: 1; transform: translateY(0); }
@@ -985,7 +986,8 @@ main {
 /* Desktop (mouse): all pages visible, nav at top with anchor highlight */
 @media (min-width: 769px) and (hover: hover) {
   main > .page { display: block; scroll-margin-top: 12px; }
-  main > #rosterPage { display: grid; gap: inherit; }
+  main > #rosterPage,
+  main > #fieldingPage { display: grid; gap: inherit; }
   html { scroll-padding-top: 12px; }
   /* No nav button is active by default on desktop — only when user clicks */
   body.desktop-no-default-active .page-nav button.active { background: transparent; color: var(--gray-700); transform: none; box-shadow: none; }
@@ -1083,8 +1085,11 @@ h2.section-heading-row > span {
   white-space: nowrap;
 }
 .heading-date:empty { display: none; }
-@media (max-width: 420px) {
-  h2.section-heading-row { font-size: 2rem; letter-spacing: 0; }
+@media (max-width: 600px) {
+  h2.section-heading-row { font-size: 1.75rem; letter-spacing: 0; }
+  /* Headings that carry the game date shrink a bit more so title and
+     date always share one line on a phone. */
+  h2.section-heading-row:has(.heading-date) { font-size: 1.4rem; }
 }
 
 /* Inspirational quote at top of each view */
@@ -3452,7 +3457,7 @@ footer > * { max-width: 720px; margin-left: auto; margin-right: auto; }
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  background: rgba(255, 255, 255, 0.5);
+  background: #fff;
   backdrop-filter: blur(12px) saturate(160%);
   -webkit-backdrop-filter: blur(12px) saturate(160%);
   border: 1px solid rgba(15, 23, 42, 0.08);
@@ -3519,7 +3524,7 @@ footer > * { max-width: 720px; margin-left: auto; margin-right: auto; }
   align-items: baseline;
   gap: 0.45rem;
   /* Big date — the coach should be able to read it at a glance. */
-  font-size: 2rem;
+  font-size: 2.75rem;
   font-weight: 800;
   color: var(--navy-dark);
   cursor: pointer;
@@ -3528,7 +3533,7 @@ footer > * { max-width: 720px; margin-left: auto; margin-right: auto; }
   flex-shrink: 0;
 }
 .cgb-date-pill .cgb-d { font-size: inherit; }
-.cgb-date-pill .cgb-m { color: var(--gray-500); font-weight: 700; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 0.08em; }
+.cgb-date-pill .cgb-m { color: var(--gray-500); font-weight: 700; font-size: 1.4rem; text-transform: uppercase; letter-spacing: 0.08em; }
 .cgb-date-pill input.cgb-date-input {
   position: absolute;
   inset: 0;
@@ -3701,8 +3706,8 @@ footer > * { max-width: 720px; margin-left: auto; margin-right: auto; }
   .current-game-banner { padding: 1.1rem 1.25rem 1.1rem 1.5rem; gap: 0.4rem; }
   .cgb-title { font-size: 3.25rem; }
   .cgb-matchup-line { font-size: 1.15rem; }
-  .cgb-date-pill { font-size: 2.4rem; gap: 0.45rem; }
-  .cgb-date-pill .cgb-m { font-size: 1.3rem; }
+  .cgb-date-pill { font-size: 3.25rem; gap: 0.45rem; }
+  .cgb-date-pill .cgb-m { font-size: 1.6rem; }
   .cgb-actions-status {
     font-size: 0.78rem;
     padding: 0.45rem 0.95rem;
@@ -3857,29 +3862,64 @@ button, .outs-btn, .sc-btn, .cgb-action, [role="button"] {
   .scorecard-name { font-size: 1rem; }
 }
 
-/* Inline assists/outs steppers on the fielding rows (replaces the
-   standalone Scorecard page). Sits as a full-width second row under the
-   position/player line. */
-.defense-stats {
-  grid-column: 1 / -1;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.2rem 0 0.25rem;
-}
-.ds-group {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-}
-.ds-label {
-  font-size: 0.66rem;
+/* Score box on the fielding page — one row per present player with
+   assists/outs steppers (replaces the standalone Scorecard page). */
+.score-header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 104px 104px;
+  gap: 0.375rem;
+  padding: 0 0.625rem 0.375rem;
+  font-size: 0.7rem;
   font-weight: 800;
-  color: var(--gray-500);
-  letter-spacing: 0.07em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
-  margin-right: 0.1rem;
+  color: var(--gray-500);
+}
+.score-header span:not(:first-child) { text-align: center; }
+.score-list { display: flex; flex-direction: column; gap: 0.375rem; }
+.score-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 104px 104px;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.375rem 0.625rem;
+  background: rgba(255, 255, 255, 0.6);
+  border: 1.5px solid rgba(15, 23, 42, 0.05);
+  border-radius: 12px;
+}
+.score-row-name {
+  font-weight: 900;
+  font-size: 1.05rem;
+  color: var(--navy);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.score-metric {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+}
+
+/* Subtle sponsor credit at the bottom of the batting/fielding pages. */
+.page-sponsor-line {
+  display: block;
+  text-align: center;
+  margin-top: 1rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--gray-500);
+  text-decoration: none;
+}
+.page-sponsor-line:hover { color: var(--cardinal-red); }
+
+/* Present-count next to "Today's Roster" — big, red, no label. */
+.roster-count {
+  flex: 0 0 auto;
+  font-weight: 900;
+  color: var(--cardinal-red);
+  font-variant-numeric: tabular-nums;
 }
 
 /* ============ Bench block ============ */
@@ -3900,22 +3940,18 @@ button, .outs-btn, .sc-btn, .cgb-action, [role="button"] {
 }
 .bench-list {
   display: grid;
-  /* Wide enough for a name plus the assists/outs steppers. */
-  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
   gap: 0.5rem;
 }
 .bench-row {
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 0.3rem;
   background: white;
   border: 1.5px solid #DDC58F;
-  border-radius: 14px;
+  border-radius: 999px;
   padding: 0.5rem 0.875rem;
 }
-.bench-row .defense-stats { width: 100%; padding: 0; }
 .bench-name {
   font-weight: 800;
   font-size: 1rem;
@@ -4082,14 +4118,14 @@ button, .outs-btn, .sc-btn, .cgb-action, [role="button"] {
   <div id="rosterPage" class="page active">
     <div class="current-game-banner" id="currentGameBanner" style="display:none"></div>
     <section>
-    <h2>Today's Roster</h2>
+    <h2 class="section-heading-row">
+      <span>Today's Roster</span>
+      <span class="roster-count"><span id="presentCount">9</span>/<span id="totalCount">9</span></span>
+    </h2>
     <div class="roster-body" id="rosterBody">
       <div class="roster-grid" id="rosterGrid"></div>
       <div class="roster-status">
-        <span>
-          <span class="count-display" id="presentCount">9</span> / <span id="totalCount">9</span> present
-          <span class="squad-label" id="squadLabel" style="display: none;">FULL SQUAD ⚡</span>
-        </span>
+        <span class="squad-label" id="squadLabel" style="display: none;">FULL SQUAD ⚡</span>
       </div>
     </div>
     <input type="file" id="logoInput" class="hidden-input" accept="image/*">
@@ -4147,15 +4183,13 @@ button, .outs-btn, .sc-btn, .cgb-action, [role="button"] {
       </button>
     </h2>
     <ol class="batting-list" id="battingOrder"></ol>
+    <a class="page-sponsor-line" href="https://www.redkeysolutions.com/" target="_blank" rel="noopener">Red Key — your technology and AI partner</a>
   </section>
 
-  <section id="fieldingPage" class="page">
+  <div id="fieldingPage" class="page">
+    <section>
     <h2 class="section-heading-row">
       <span>Field Positions <span class="heading-date" id="fieldingDate"></span></span>
-      <span class="sync-status" id="syncStatus" aria-live="polite"></span>
-      <button class="rotation-shuffle-btn" id="scoreRefreshBtn" type="button" aria-label="Sync with cloud" title="Push local changes, then pull the latest">
-        <i class="fa-solid fa-arrows-rotate" aria-hidden="true"></i>
-      </button>
       <button class="rotation-shuffle-btn" id="rotationShuffleBtn" type="button" aria-label="Shuffle all innings">
         <i class="fa-solid fa-shuffle" aria-hidden="true"></i>
       </button>
@@ -4164,20 +4198,40 @@ button, .outs-btn, .sc-btn, .cgb-action, [role="button"] {
       <div class="outs-display">
         <div class="outs-label">Team Outs</div>
         <div class="outs-value" id="outsValue">0</div>
-        <div class="outs-sublabel">Sum of every player's outs</div>
       </div>
     </div>
     <div id="rotationNote"></div>
     <div class="inning-tabs" id="inningTabs"></div>
     <div id="inningContent"></div>
+    </section>
 
-    <h2 class="stacked-heading">Summary</h2>
+    <section>
+    <h2 class="section-heading-row">
+      <span>Score</span>
+      <span class="sync-status" id="syncStatus" aria-live="polite"></span>
+      <button class="rotation-shuffle-btn" id="scoreRefreshBtn" type="button" aria-label="Sync with cloud" title="Push local changes, then pull the latest">
+        <i class="fa-solid fa-arrows-rotate" aria-hidden="true"></i>
+      </button>
+    </h2>
+    <div class="score-header"><span></span><span>Assists</span><span>Outs</span></div>
+    <div class="score-list" id="scoreList"></div>
+    </section>
+
+    <section>
+    <h2>Field Map</h2>
+    <div id="fieldMap"></div>
+    </section>
+
+    <section>
+    <h2>Summary</h2>
     <div id="statsContainer"></div>
     <div class="stats-legend">
       <span><span class="pos-pill premium">SS</span> Premium (Pitcher / Infield / Shortstop)</span>
       <span><span class="pos-pill outfield">LF</span> Outfield</span>
     </div>
-  </section>
+    <a class="page-sponsor-line" href="https://www.redkeysolutions.com/" target="_blank" rel="noopener">Red Key — your technology and AI partner</a>
+    </section>
+  </div>
 
 </main>
 
@@ -6994,6 +7048,9 @@ function renderInnings() {
     note.innerHTML = '';
     tabs.innerHTML = '';
     content.innerHTML = `<div class="alert danger">Need at least 4 players present to generate a field rotation. Currently ${present.length} present.</div>`;
+    const fieldMap = document.getElementById('fieldMap');
+    if (fieldMap) fieldMap.innerHTML = '';
+    renderScoreBox();
     return;
   }
 
@@ -7007,24 +7064,6 @@ function renderInnings() {
 
   const inning = result.rotation[state.currentInning - 1];
   const bench = inning._bench || [];
-
-  // Per-player assists/outs steppers, rendered right on the fielding
-  // rows — this replaced the standalone Scorecard page.
-  const statBlock = (player) => `
-        <div class="defense-stats">
-          <span class="ds-group">
-            <span class="ds-label">Assists</span>
-            <button class="sc-btn" data-action="dec" data-metric="assists" ${getStat(player, 'assists') <= 0 ? 'disabled' : ''}>−</button>
-            <span class="sc-value">${getStat(player, 'assists')}</span>
-            <button class="sc-btn" data-action="inc" data-metric="assists">+</button>
-          </span>
-          <span class="ds-group">
-            <span class="ds-label">Outs</span>
-            <button class="sc-btn" data-action="dec" data-metric="outs" ${getStat(player, 'outs') <= 0 ? 'disabled' : ''}>−</button>
-            <span class="sc-value">${getStat(player, 'outs')}</span>
-            <button class="sc-btn" data-action="inc" data-metric="outs">+</button>
-          </span>
-        </div>`;
 
   let html = '<div class="defense-list" data-fielding-zone="defense">';
   for (const pos of DEFENSE_LIST_ORDER) {
@@ -7044,7 +7083,6 @@ function renderInnings() {
         <div class="defense-player-block">
           <div class="defense-player-name">${player}</div>
         </div>
-        ${statBlock(player)}
       </div>
     `;
   }
@@ -7056,15 +7094,15 @@ function renderInnings() {
       html += `
         <div class="bench-row" data-bench-idx="${idx}" data-player="${escapeHtml(player)}">
           <div class="bench-name">${player}</div>
-          ${statBlock(player)}
         </div>
       `;
     });
     html += '</div></div>';
   }
 
-  html += '<div class="diamond-section"><h2 class="stacked-heading">Field Map</h2><div class="diamond">';
-  html += `
+  // The diamond renders into its own "Field Map" card.
+  let mapHtml = '<div class="diamond">';
+  mapHtml += `
     <svg class="diamond-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
       <defs>
         <radialGradient id="dirtFill" cx="50%" cy="55%" r="55%">
@@ -7100,7 +7138,7 @@ function renderInnings() {
   for (const pos of DIAMOND_ORDER) {
     if (!inning[pos]) continue;
     const player = inning[pos];
-    html += `
+    mapHtml += `
       <div class="diamond-position pos-${pos}">
         <div class="pos-pill">
           <span class="pos-pill-abbr">${pos}</span>
@@ -7109,9 +7147,39 @@ function renderInnings() {
       </div>
     `;
   }
-  html += '</div></div>';
+  mapHtml += '</div>';
 
   content.innerHTML = html;
+  const fieldMap = document.getElementById('fieldMap');
+  if (fieldMap) fieldMap.innerHTML = mapHtml;
+  renderScoreBox();
+}
+
+// Score box on the fielding page: every present player with
+// assists/outs steppers. Replaces the old standalone Scorecard page.
+function renderScoreBox() {
+  const host = document.getElementById('scoreList');
+  if (!host) return;
+  const present = getPresentInRosterOrder();
+  if (!present.length) {
+    host.innerHTML = '<p style="color: var(--gray-500); font-size: 0.95rem;">No players present.</p>';
+    return;
+  }
+  host.innerHTML = present.map(player => `
+    <div class="score-row" data-player="${escapeHtml(player)}">
+      <span class="score-row-name">${player}</span>
+      <div class="score-metric">
+        <button class="sc-btn" data-action="dec" data-metric="assists" ${getStat(player, 'assists') <= 0 ? 'disabled' : ''}>−</button>
+        <span class="sc-value">${getStat(player, 'assists')}</span>
+        <button class="sc-btn" data-action="inc" data-metric="assists">+</button>
+      </div>
+      <div class="score-metric">
+        <button class="sc-btn" data-action="dec" data-metric="outs" ${getStat(player, 'outs') <= 0 ? 'disabled' : ''}>−</button>
+        <span class="sc-value">${getStat(player, 'outs')}</span>
+        <button class="sc-btn" data-action="inc" data-metric="outs">+</button>
+      </div>
+    </div>
+  `).join('');
 }
 
 // Drag a player from one position to another inside the current inning.
@@ -7797,18 +7865,18 @@ function renderTeamOuts() {
     el.classList.add('bumped');
   }
 }
-// Assists/outs steppers live on the fielding rows now.
-document.getElementById('inningContent').addEventListener('click', (e) => {
+// Assists/outs steppers live in the Score box on the fielding page.
+document.getElementById('scoreList').addEventListener('click', (e) => {
   const btn = e.target.closest('.sc-btn');
   if (!btn) return;
-  const row = btn.closest('[data-player]');
+  const row = btn.closest('.score-row[data-player]');
   if (!row) return;
   const player = row.dataset.player;
   const metric = btn.dataset.metric;
   const action = btn.dataset.action;
   const current = getStat(player, metric);
   setStat(player, metric, action === 'inc' ? current + 1 : current - 1);
-  renderInnings();
+  renderScoreBox();
   renderTeamOuts();
   if (metric === 'outs' && action === 'inc' && computeTeamOuts() % 3 === 0) {
     showBubble("3 outs — switch sides! ⚾");
@@ -8007,11 +8075,11 @@ document.addEventListener('keydown', (e) => {
   }
 });
 
-// Fielding +/- click → flash the touched row briefly
-document.getElementById('inningContent').addEventListener('click', (e) => {
+// Score +/- click → flash the touched row briefly
+document.getElementById('scoreList').addEventListener('click', (e) => {
   const btn = e.target.closest('.sc-btn');
   if (!btn) return;
-  const row = btn.closest('[data-player]');
+  const row = btn.closest('.score-row');
   if (!row) return;
   row.animate(
     [{ background: 'var(--gray-50)' }, { background: '#FFE0E8' }, { background: 'var(--gray-50)' }],
