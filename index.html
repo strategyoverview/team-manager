@@ -3124,20 +3124,21 @@ footer > * { max-width: 720px; margin-left: auto; margin-right: auto; }
   gap: 0.5rem;
 }
 .schedule-month-label {
-  font-size: 0.72rem;
-  font-weight: 800;
-  letter-spacing: 0.12em;
+  font-size: 1.4rem;
+  font-weight: 900;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: var(--gray-500);
+  color: var(--navy-dark);
   padding-left: 0.25rem;
+  margin-top: 0.25rem;
 }
 .schedule-row {
   display: grid;
   grid-template-columns: 54px minmax(0, 1fr);
   align-items: center;
-  gap: 0.6rem;
+  gap: 0.5rem;
   padding: 0.6rem 0.75rem;
-  padding-left: 1rem;
+  padding-left: 0.875rem;
   background: rgba(255, 255, 255, 0.65);
   backdrop-filter: blur(10px);
   border: 1px solid rgba(10, 10, 10, 0.06);
@@ -3221,7 +3222,7 @@ footer > * { max-width: 720px; margin-left: auto; margin-right: auto; }
 .schedule-opponent {
   flex: 0 1 auto;
   min-width: 0;
-  font-size: 1.3rem;
+  font-size: 1.6rem;
   font-weight: 800;
   color: var(--navy-dark);
   overflow: hidden;
@@ -5489,7 +5490,7 @@ function renderScheduleList() {
           <div class="schedule-stripe" aria-hidden="true"></div>
           <div class="schedule-date"><span class="schedule-date-day">${day}</span><span class="schedule-date-mon">${mon}</span></div>
           <div class="schedule-row-main">
-            <div class="schedule-opponent">${g.opponent ? escapeHtml('vs ' + g.opponent) : 'Game'}</div>
+            <div class="schedule-opponent">${g.opponent ? escapeHtml(g.opponent) : 'Game'}</div>
             <span class="schedule-status ${status}">${statusLabel(status)}</span>
             ${g.notes ? `<div class="schedule-notes">${escapeHtml(g.notes)}</div>` : ''}
           </div>
