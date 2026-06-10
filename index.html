@@ -879,8 +879,10 @@ main {
 .page-nav .nav-icon { font-size: 1.15rem; line-height: 1; display: inline-flex; align-items: center; }
 .page-nav .nav-icon svg { width: 1.15em; height: 1.15em; display: block; }
 
-/* Mobile: floating glass pill nav, only one page visible */
-@media (max-width: 768px) {
+/* Mobile + iPad (any touch-first device): floating glass pill nav,
+   only one page visible. The pointer/hover clause catches iPads at any
+   width — including 12.9" landscape — without affecting mouse desktops. */
+@media (max-width: 768px), (hover: none) and (pointer: coarse) {
   .page-nav {
     position: fixed;
     top: auto;
@@ -956,30 +958,27 @@ main {
      content loads clean. Only roster keeps the team header. */
   body[data-page="batting"] header,
   body[data-page="fielding"] header,
-  body[data-page="score"] header,
-  body[data-page="schedule"] header { display: none; }
+  body[data-page="score"] header { display: none; }
   /* Without the header, the section title sits directly under the
      iPhone Dynamic Island / notch in full-screen mode. Use max() so
      we always reserve enough room for the iOS status bar even when
      env(safe-area-inset-top) reports 0 (e.g. Safari tab, desktop). */
   body[data-page="batting"] main,
   body[data-page="fielding"] main,
-  body[data-page="score"] main,
-  body[data-page="schedule"] main {
+  body[data-page="score"] main {
     padding-top: max(3rem, calc(env(safe-area-inset-top) + 1.5rem)) !important;
   }
 }
 @media (max-width: 600px) {
   body[data-page="batting"] main,
   body[data-page="fielding"] main,
-  body[data-page="score"] main,
-  body[data-page="schedule"] main {
+  body[data-page="score"] main {
     padding-top: max(3rem, calc(env(safe-area-inset-top) + 1.5rem)) !important;
   }
 }
 
-/* Desktop: all pages visible, nav at top with anchor highlight */
-@media (min-width: 769px) {
+/* Desktop (mouse): all pages visible, nav at top with anchor highlight */
+@media (min-width: 769px) and (hover: hover) {
   main > section.page { display: block; scroll-margin-top: 12px; }
   html { scroll-padding-top: 12px; }
   /* No nav button is active by default on desktop — only when user clicks */
@@ -1076,6 +1075,8 @@ h2.section-heading-row > span {
   white-space: nowrap;
 }
 .heading-date:empty { display: none; }
+/* The scorecard date is the coach's anchor mid-game — keep it big. */
+#scorecardDate { font-size: 1.6rem; }
 @media (max-width: 420px) {
   h2.section-heading-row { font-size: 2rem; letter-spacing: 0; }
 }
@@ -1396,7 +1397,9 @@ h2 .badge {
 }
 .batting-row {
   cursor: grab;
-  touch-action: none;
+  /* pan-y (not none) so a touch on a row still scrolls the page —
+     reordering only kicks in after the long-press hold. */
+  touch-action: pan-y;
   user-select: none;
   -webkit-user-select: none;
 }
@@ -1664,7 +1667,7 @@ h2 .badge {
 .defense-list { gap: 0.3rem !important; }
 .defense-row {
   cursor: grab;
-  touch-action: none;
+  touch-action: pan-y;
   user-select: none;
   -webkit-user-select: none;
 }
@@ -1678,7 +1681,7 @@ h2 .badge {
 }
 .bench-row {
   cursor: grab;
-  touch-action: none;
+  touch-action: pan-y;
   user-select: none;
   -webkit-user-select: none;
 }
@@ -4035,10 +4038,6 @@ button, .outs-btn, .sc-btn, .cgb-action, [role="button"] {
     <i class="nav-icon fa-solid fa-chart-simple" aria-hidden="true"></i>
     <span class="nav-label">Score</span>
   </button>
-  <button data-page="schedule">
-    <i class="nav-icon fa-solid fa-calendar-days" aria-hidden="true"></i>
-    <span class="nav-label">Schedule</span>
-  </button>
 </nav>
 
 <main>
@@ -4063,6 +4062,19 @@ button, .outs-btn, .sc-btn, .cgb-action, [role="button"] {
         <i class="fa-solid fa-pen"></i>
       </button>
     </div>
+
+    <h2 class="stacked-heading section-heading-row">
+      <span>Schedule</span>
+      <button class="rotation-shuffle-btn" id="scheduleAddBtn" type="button" aria-label="Add game">
+        <i class="fa-solid fa-plus" aria-hidden="true"></i>
+      </button>
+    </h2>
+    <div class="schedule-view-toggle" id="scheduleViewToggle">
+      <button data-view="list" class="active">List</button>
+      <button data-view="calendar">Calendar</button>
+    </div>
+    <div id="scheduleListView" class="schedule-list-view"></div>
+    <div id="scheduleCalendarView" class="schedule-calendar-view" hidden></div>
   </section>
 
   <div class="modal-overlay" id="rosterModalOverlay" hidden>
@@ -4112,21 +4124,6 @@ button, .outs-btn, .sc-btn, .cgb-action, [role="button"] {
       <span><span class="pos-pill premium">SS</span> Premium (Pitcher / Infield / Shortstop)</span>
       <span><span class="pos-pill outfield">LF</span> Outfield</span>
     </div>
-  </section>
-
-  <section id="schedulePage" class="page">
-    <h2 class="section-heading-row">
-      <span>Schedule</span>
-      <button class="rotation-shuffle-btn" id="scheduleAddBtn" type="button" aria-label="Add game">
-        <i class="fa-solid fa-plus" aria-hidden="true"></i>
-      </button>
-    </h2>
-    <div class="schedule-view-toggle" id="scheduleViewToggle">
-      <button data-view="list" class="active">List</button>
-      <button data-view="calendar">Calendar</button>
-    </div>
-    <div id="scheduleListView" class="schedule-list-view"></div>
-    <div id="scheduleCalendarView" class="schedule-calendar-view" hidden></div>
   </section>
 
   <section id="scorePage" class="page">
@@ -6324,6 +6321,11 @@ let ROSTER = loadRoster();
 function saveRoster(next) {
   ROSTER = next.slice();
   localStorage.setItem(tk('cardinals_roster_v2'), JSON.stringify(ROSTER));
+  // Explicit beacon on every roster change (edits, reorders, batting
+  // drags) — same treatment as live scoring, so the change reaches the
+  // cloud even if iOS suspends the JS context before the debounced
+  // push fires.
+  if (typeof cloudBeaconScheduled === 'function') cloudBeaconScheduled();
 }
 // T-ball field positions: 2 pitchers + 4-OF + 4-infield = 10 spots so everyone plays.
 // Order = fill / keep priority. If roster shrinks, extras (P2, then LCF) drop first
@@ -6454,6 +6456,8 @@ function loadManualRotation() {
 }
 function saveManualRotation() {
   try { localStorage.setItem(gameKey('manual_rotation'), JSON.stringify(state.manualRotation)); } catch (e) {}
+  // Field-position swaps must hit the cloud immediately, like scoring.
+  if (typeof cloudBeaconScheduled === 'function') cloudBeaconScheduled();
 }
 function clearManualRotation() {
   state.manualRotation = {};
@@ -6615,7 +6619,10 @@ function loadPresent() {
   } catch (e) {}
   return new Set(ROSTER);
 }
-function savePresent() { localStorage.setItem(gameKey('present'), JSON.stringify([...state.present])); }
+function savePresent() {
+  localStorage.setItem(gameKey('present'), JSON.stringify([...state.present]));
+  if (typeof cloudBeaconScheduled === 'function') cloudBeaconScheduled();
+}
 function loadPhotos() {
   try { return JSON.parse(localStorage.getItem('cardinals_photos') || '{}'); }
   catch (e) { return {}; }
@@ -6906,10 +6913,17 @@ function bindBattingDrag() {
     if (e && e.pointerId !== drag.pointerId) return;
     list.querySelectorAll('.dragging').forEach(r => r.classList.remove('dragging'));
     drag = null;
+    // Drag finished — force the final batting order onto the wire now
+    // rather than waiting out the debounce/throttle.
+    if (typeof flushCloudPush === 'function') flushCloudPush().catch(() => {});
   }
   list.addEventListener('pointerup', endDrag);
   list.addEventListener('pointercancel', endDrag);
   list.addEventListener('pointerleave', () => cancelPending());
+  // With touch-action: pan-y the browser would still try to scroll once
+  // an activated drag moves vertically. Blocking touchmove only while a
+  // drag is live keeps normal scrolling intact.
+  list.addEventListener('touchmove', (e) => { if (drag) e.preventDefault(); }, { passive: false });
 }
 
 function renderInnings() {
@@ -7138,6 +7152,8 @@ function bindFieldingDrag() {
     drag = null;
   });
   content.addEventListener('pointerleave', () => cancelPending());
+  // See bindBattingDrag: only block native scrolling while a drag is live.
+  content.addEventListener('touchmove', (e) => { if (drag) e.preventDefault(); }, { passive: false });
 }
 
 // Apply a swap to the current inning (positions or bench) and persist.
@@ -7164,6 +7180,8 @@ function swapFielders(srcKind, srcKey, srcPlayer, dstKind, dstKey, dstPlayer) {
   setSlot(dstKind, dstKey, srcPlayer);
   state.manualRotation[String(inningIdx)] = next;
   saveManualRotation();
+  // Swap finished — force it onto the wire like the batting drag does.
+  if (typeof flushCloudPush === 'function') flushCloudPush().catch(() => {});
   // Re-render the inning and stats.
   renderInnings();
   renderStats();
@@ -7211,7 +7229,9 @@ function renderStats() {
   container.innerHTML = html;
 }
 
-const VALID_PAGES = ['roster', 'batting', 'fielding', 'score', 'schedule'];
+// 'schedule' is no longer a page — its content lives on the roster page.
+// A stored page of 'schedule' falls through showPage's guard to 'roster'.
+const VALID_PAGES = ['roster', 'batting', 'fielding', 'score'];
 let userHasNavigated = false;
 function showPage(page, opts) {
   opts = opts || {};
@@ -7222,7 +7242,10 @@ function showPage(page, opts) {
   document.querySelectorAll('main > section.page').forEach(s => {
     s.classList.toggle('active', s.id === page + 'Page');
   });
-  const isDesktop = window.innerWidth > 768;
+  // Must mirror the CSS: iPads (touch-first, no hover) get the phone
+  // layout at any width, so only mouse devices wider than 768px are
+  // "desktop" here.
+  const isDesktop = window.matchMedia('(min-width: 769px) and (hover: hover)').matches;
   document.querySelectorAll('.page-nav button').forEach(b => {
     if (isDesktop && opts.initial) {
       b.classList.remove('active');

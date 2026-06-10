@@ -8,7 +8,7 @@
    - Pantry API calls  → bypassed entirely so syncs never get stuck
      on a stale cached response
 */
-const CACHE = 'tm-cache-v10-game-recap';
+const CACHE = 'tm-cache-v11-ipad-nav';
 
 const PRECACHE = [
   './',
