@@ -1408,7 +1408,7 @@ h2 .badge {
   font-weight: 700;
   counter-increment: bat;
   transition: all 0.15s ease;
-  min-height: 52px;
+  min-height: 58px;
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   width: 100%;
@@ -1423,7 +1423,7 @@ h2 .badge {
   white-space: nowrap;
 }
 @media (min-width: 768px) {
-  .batting-row { padding: 0.875rem 1.25rem; min-height: 64px; gap: 1rem; }
+  .batting-row { padding: 1rem 1.25rem; min-height: 70px; gap: 1rem; }
 }
 .batting-row:hover {
   background: rgba(255, 255, 255, 0.95);
@@ -1683,7 +1683,7 @@ h2 .badge {
   -webkit-backdrop-filter: blur(8px);
   border: 1.5px solid rgba(15, 23, 42, 0.05);
   border-radius: 12px;
-  min-height: 52px;
+  min-height: 58px;
   transition: all 0.15s ease;
   box-shadow: 0 1px 0 rgba(255, 255, 255, 0.5) inset;
   width: 100%;
@@ -1732,7 +1732,7 @@ h2 .badge {
 
 @media (min-width: 768px) {
   /* Same height as batting rows — fills the page without overflowing. */
-  .defense-row { padding: 0.75rem 1.25rem; min-height: 64px; }
+  .defense-row { padding: 0.875rem 1.25rem; min-height: 70px; }
 }
 
 .defense-pos-block {
@@ -3546,7 +3546,6 @@ footer > * { max-width: 720px; margin-left: auto; margin-right: auto; }
 @media (max-width: 600px) {
   /* Small enough that the title and the game date share one line. */
   .cgb-title { font-size: 1.5rem; }
-  .cgb-date-pill { font-size: 1.5rem; }
 }
 /* Single-line matchup row right below the title. Shrinks the font on tighter
    screens before truncating with ellipsis so both team names stay readable. */
@@ -3554,7 +3553,8 @@ footer > * { max-width: 720px; margin-left: auto; margin-right: auto; }
   display: flex;
   align-items: baseline;
   gap: 0.4rem;
-  font-size: 1.3rem;
+  /* Roughly the same visual width as the CURRENT GAME title above it. */
+  font-size: 1.5rem;
   font-weight: 700;
   color: var(--navy-dark);
   white-space: nowrap;
@@ -3583,6 +3583,10 @@ footer > * { max-width: 720px; margin-left: auto; margin-right: auto; }
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
   flex-shrink: 0;
+}
+@media (max-width: 600px) {
+  /* Sized with the shrunken title so both share one line. */
+  .cgb-date-pill { font-size: 1.5rem; }
 }
 .cgb-date-pill input.cgb-date-input {
   position: absolute;
@@ -3768,7 +3772,7 @@ footer > * { max-width: 720px; margin-left: auto; margin-right: auto; }
 @media (min-width: 720px) {
   .current-game-banner { padding: 1.1rem 1.25rem 1.1rem 1.5rem; gap: 0.4rem; }
   .cgb-title { font-size: 3.25rem; }
-  .cgb-matchup-line { font-size: 1.5rem; }
+  .cgb-matchup-line { font-size: 2rem; }
   .cgb-date-pill { font-size: 3.25rem; gap: 0.45rem; }
   .cgb-actions-status {
     font-size: 0.78rem;
@@ -3978,13 +3982,6 @@ button, .outs-btn, .sc-btn, .cgb-action, [role="button"] {
   .score-metric { gap: 0.25rem; }
 }
 
-/* Present-count next to "Today's Roster" — big, red, no label. */
-.roster-count {
-  flex: 0 0 auto;
-  font-weight: 900;
-  color: var(--cardinal-red);
-  font-variant-numeric: tabular-nums;
-}
 
 /* ============ Bench block ============ */
 .bench-block {
@@ -4183,8 +4180,7 @@ button, .outs-btn, .sc-btn, .cgb-action, [role="button"] {
     <div class="current-game-banner" id="currentGameBanner" style="display:none"></div>
     <section>
     <h2 class="section-heading-row">
-      <span>Today's Roster</span>
-      <span class="roster-count"><span id="presentCount">9</span>/<span id="totalCount">9</span></span>
+      <span>Roster <span class="heading-date" id="rosterDate"></span></span>
       <button class="rotation-shuffle-btn" id="rosterEditBtn" type="button" aria-label="Edit roster" title="Edit roster">
         <i class="fa-solid fa-pen"></i>
       </button>
@@ -4205,6 +4201,7 @@ button, .outs-btn, .sc-btn, .cgb-action, [role="button"] {
         <i class="fa-solid fa-plus" aria-hidden="true"></i> Add Game
       </button>
     </h2>
+    <div id="scheduleListView" class="schedule-list-view"></div>
     <div id="scheduleCalendarView" class="schedule-calendar-view"></div>
     </section>
   </div>
@@ -4255,10 +4252,6 @@ button, .outs-btn, .sc-btn, .cgb-action, [role="button"] {
     <section>
     <h2 class="section-heading-row">
       <span>Score <span class="heading-date" id="scoreDate"></span></span>
-      <span class="sync-status" id="syncStatus" aria-live="polite"></span>
-      <button class="rotation-shuffle-btn" id="scoreRefreshBtn" type="button" aria-label="Sync with cloud" title="Push local changes, then pull the latest">
-        <i class="fa-solid fa-arrows-rotate" aria-hidden="true"></i>
-      </button>
     </h2>
     <div class="outs-section outs-readonly" id="outsSection">
       <div class="outs-display">
@@ -4271,7 +4264,12 @@ button, .outs-btn, .sc-btn, .cgb-action, [role="button"] {
     </section>
 
     <section>
-    <h2>Summary</h2>
+    <h2 class="section-heading-row">
+      <span>Summary</span>
+      <button class="rotation-shuffle-btn" id="rotationShuffleBtn2" type="button" aria-label="Shuffle all innings">
+        <i class="fa-solid fa-shuffle" aria-hidden="true"></i>
+      </button>
+    </h2>
     <div id="statsContainer"></div>
     <div class="stats-legend">
       <span><span class="pos-pill premium">SS</span> Premium (Pitcher / Infield / Shortstop)</span>
@@ -5437,11 +5435,60 @@ function fmtDateRow(dk) {
 
 let calendarMonth = null;  // YYYY-MM, set on first calendar render
 
-// The schedule is calendar-only — the old list view and toggle are gone.
+// List on top, calendar below — both always visible, no toggle.
 function renderSchedule() {
-  const calEl = document.getElementById('scheduleCalendarView');
-  if (!calEl) return;
+  renderScheduleList();
   renderScheduleCalendar();
+}
+
+function renderScheduleList() {
+  const listEl = document.getElementById('scheduleListView');
+  if (!listEl) return;
+  const games = loadGames();
+  if (!games.length) {
+    listEl.innerHTML = '<div class="schedule-empty">No games yet. Tap Add Game above to add one.</div>';
+    return;
+  }
+  // Newest games at the top (descending by date) so the most recent /
+  // upcoming games lead — June above May, etc.
+  const ordered = games.slice().sort((a, b) => b.date.localeCompare(a.date) || (b.id - a.id));
+  // Group by month (insertion order is already newest-first)
+  const byMonth = new Map();
+  for (const g of ordered) {
+    const key = g.date.slice(0, 7);
+    if (!byMonth.has(key)) byMonth.set(key, []);
+    byMonth.get(key).push(g);
+  }
+  const currentId = currentGameId;
+  const html = [];
+  for (const [key, gs] of byMonth) {
+    html.push(`<div class="schedule-month"><div class="schedule-month-label">${fmtMonthYear(gs[0].date)}</div>`);
+    for (const g of gs) {
+      const status = gameStatus(g);
+      const isCurrent = String(g.id) === String(currentId);
+      const { day, mon } = fmtDateRow(g.date);
+      const colors = g.colors || {};
+      const styleVars = colors.primary ? `style="--opp-primary:${colors.primary}"` : '';
+      html.push(`
+        <div class="schedule-row${status === 'active' ? ' is-active' : ''}${isCurrent ? ' is-current' : ''}" data-game-id="${g.id}" ${styleVars}>
+          <div class="schedule-stripe" aria-hidden="true"></div>
+          <div class="schedule-date"><span class="schedule-date-day">${day}</span><span class="schedule-date-mon">${mon}</span></div>
+          <div class="schedule-row-main">
+            <div class="schedule-opponent">${g.opponent ? escapeHtml('vs ' + g.opponent) : 'Game'}</div>
+            <span class="schedule-status ${status}">${statusLabel(status)}</span>
+            ${g.notes ? `<div class="schedule-notes">${escapeHtml(g.notes)}</div>` : ''}
+          </div>
+          <div class="schedule-row-actions">
+            <button class="schedule-row-btn" data-action="overview" data-game-id="${g.id}" aria-label="Game overview" title="Game overview"><i class="fa-solid fa-eye"></i></button>
+            <button class="schedule-row-btn" data-action="edit" data-game-id="${g.id}" aria-label="Edit game" title="Edit"><i class="fa-solid fa-pen"></i></button>
+            <button class="schedule-row-btn danger" data-action="delete" data-game-id="${g.id}" aria-label="Delete game" title="Delete"><i class="fa-solid fa-trash"></i></button>
+          </div>
+        </div>
+      `);
+    }
+    html.push(`</div>`);
+  }
+  listEl.innerHTML = html.join('');
 }
 
 function renderScheduleCalendar() {
@@ -6095,12 +6142,34 @@ function bindScoreRefresh() {
 
 function bindScheduleUi() {
   document.getElementById('scheduleAddBtn')?.addEventListener('click', () => openGameModal(null));
-  // The list view is gone — the game recap opens from the Edit Game modal.
+  // The game recap also opens from the Edit Game modal.
   document.getElementById('gameModalRecapBtn')?.addEventListener('click', () => {
     const g = getGameById(editingGameId);
     if (!g) return;
     closeGameModal();
     openGameOverview(g);
+  });
+  document.getElementById('scheduleListView')?.addEventListener('click', (e) => {
+    const actionBtn = e.target.closest('button[data-action][data-game-id]');
+    if (actionBtn) {
+      e.stopPropagation();
+      const g = getGameById(actionBtn.dataset.gameId);
+      if (!g) return;
+      if (actionBtn.dataset.action === 'overview') openGameOverview(g);
+      else if (actionBtn.dataset.action === 'edit') openGameModal(g);
+      else if (actionBtn.dataset.action === 'delete') {
+        const label = g.opponent ? `vs ${g.opponent} on ${g.date}` : `game on ${g.date}`;
+        if (confirm(`Delete ${label}? This can't be undone.`)) {
+          editingGameId = g.id;
+          deleteGameFromModal();
+        }
+      }
+      return;
+    }
+    const row = e.target.closest('.schedule-row[data-game-id]');
+    if (!row) return;
+    const g = getGameById(row.dataset.gameId);
+    if (g) openGameModal(g);
   });
   document.getElementById('gameModalCloseBtn')?.addEventListener('click', closeGameModal);
   document.getElementById('gameModalCancelBtn')?.addEventListener('click', closeGameModal);
@@ -7451,7 +7520,7 @@ function updateHeadingDates() {
   const cur = (typeof getGameById === 'function') ? getGameById(currentGameId) : null;
   let label = '';
   if (cur) { const d = fmtDateRow(cur.date); label = `${d.mon} ${d.day}`; }
-  ['battingDate', 'fieldingDate', 'scoreDate'].forEach(id => {
+  ['rosterDate', 'battingDate', 'fieldingDate', 'scoreDate'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.textContent = label;
   });
@@ -8096,15 +8165,18 @@ if ('serviceWorker' in navigator) {
   });
 }
 
-// Reset / shuffle button on the Field Rotation header. Bumps the salt so
-// the rotation re-randomizes and clears any manual overrides.
-document.getElementById('rotationShuffleBtn')?.addEventListener('click', () => {
+// Reset / shuffle buttons on the Field Positions and Summary headers.
+// Bumps the salt so the rotation re-randomizes and clears any manual
+// overrides.
+function shuffleRotation() {
   state.rotationSalt = (state.rotationSalt || 0) + 1;
   clearManualRotation();
   renderInnings();
   renderStats();
   showBubble('Rotation shuffled ⚡');
-});
+}
+document.getElementById('rotationShuffleBtn')?.addEventListener('click', shuffleRotation);
+document.getElementById('rotationShuffleBtn2')?.addEventListener('click', shuffleRotation);
 
 // Shuffle button on the Batting Order header. Reshuffles just the
 // present players' order in ROSTER; absent players keep their relative
