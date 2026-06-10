@@ -904,16 +904,16 @@ main {
     backdrop-filter: blur(30px) saturate(180%);
     -webkit-backdrop-filter: blur(30px) saturate(180%);
     justify-content: space-around;
-    height: 60px;
+    height: 72px;
   }
   .page-nav button {
     flex: 1 1 0;
     width: 0;
     flex-direction: column;
-    gap: 2px;
+    gap: 3px;
     padding: 0.4rem 0.1rem;
     border-radius: 999px;
-    font-size: 0.64rem;
+    font-size: 0.76rem;
     text-transform: none;
     letter-spacing: 0;
     height: 100%;
@@ -932,54 +932,60 @@ main {
   }
   .page-nav button.active .nav-icon { transform: scale(1.06); color: #000; }
   .page-nav .nav-icon {
-    width: 22px;
-    height: 22px;
+    width: 26px;
+    height: 26px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.1rem;
+    font-size: 1.35rem;
     line-height: 1;
     transition: transform 0.2s ease;
   }
 
-  main > section.page { display: none; animation: pageIn 0.3s ease-out; }
-  main > section.page.active { display: block; }
+  main > .page { display: none; animation: pageIn 0.3s ease-out; }
+  main > .page.active { display: block; }
+  /* The roster page is a wrapper holding several cards (current game,
+     roster, schedule) — grid + gap keeps them spaced like main does. */
+  main > #rosterPage.active { display: grid; gap: inherit; }
   @keyframes pageIn {
     from { opacity: 0; transform: translateY(8px); }
     to { opacity: 1; transform: translateY(0); }
   }
   /* Reserve enough room at the bottom for the floating nav PLUS the
      app-team-links pills and the glass sponsor strip beneath it. */
-  body { padding-bottom: calc(180px + env(safe-area-inset-bottom)); }
+  body { padding-bottom: calc(192px + env(safe-area-inset-bottom)); }
   body.is-app > .app-team-links,
   body.is-app > .sponsor-strip-wrap { position: relative; z-index: 2; }
 
   /* Hide the giant team-logo header on non-roster pages so the
      content loads clean. Only roster keeps the team header. */
   body[data-page="batting"] header,
-  body[data-page="fielding"] header,
-  body[data-page="score"] header { display: none; }
+  body[data-page="fielding"] header { display: none; }
+  /* Game-day pages stay focused: no footer logo / sponsor box / strip. */
+  body[data-page="batting"] footer,
+  body[data-page="fielding"] footer,
+  body[data-page="batting"] .sponsor-strip-wrap,
+  body[data-page="fielding"] .sponsor-strip-wrap { display: none !important; }
   /* Without the header, the section title sits directly under the
      iPhone Dynamic Island / notch in full-screen mode. Use max() so
      we always reserve enough room for the iOS status bar even when
      env(safe-area-inset-top) reports 0 (e.g. Safari tab, desktop). */
   body[data-page="batting"] main,
-  body[data-page="fielding"] main,
-  body[data-page="score"] main {
+  body[data-page="fielding"] main {
     padding-top: max(3rem, calc(env(safe-area-inset-top) + 1.5rem)) !important;
   }
 }
 @media (max-width: 600px) {
   body[data-page="batting"] main,
-  body[data-page="fielding"] main,
-  body[data-page="score"] main {
+  body[data-page="fielding"] main {
     padding-top: max(3rem, calc(env(safe-area-inset-top) + 1.5rem)) !important;
   }
 }
 
 /* Desktop (mouse): all pages visible, nav at top with anchor highlight */
 @media (min-width: 769px) and (hover: hover) {
-  main > section.page { display: block; scroll-margin-top: 12px; }
+  main > .page { display: block; scroll-margin-top: 12px; }
+  main > #rosterPage { display: grid; gap: inherit; }
   html { scroll-padding-top: 12px; }
   /* No nav button is active by default on desktop — only when user clicks */
   body.desktop-no-default-active .page-nav button.active { background: transparent; color: var(--gray-700); transform: none; box-shadow: none; }
@@ -1068,15 +1074,15 @@ h2.section-heading-row > span {
    looking at. */
 .heading-date {
   flex: 0 0 auto;
-  font-size: 0.95rem;
+  /* Same size as the heading text itself — the game date is the
+     coach's anchor, it should never need squinting. */
+  font-size: 1em;
   font-weight: 700;
   color: var(--cardinal-red);
   letter-spacing: 0;
   white-space: nowrap;
 }
 .heading-date:empty { display: none; }
-/* The scorecard date is the coach's anchor mid-game — keep it big. */
-#scorecardDate { font-size: 1.6rem; }
 @media (max-width: 420px) {
   h2.section-heading-row { font-size: 2rem; letter-spacing: 0; }
 }
@@ -2143,7 +2149,7 @@ footer > * { max-width: 720px; margin-left: auto; margin-right: auto; }
   .header-actions, .photo-btn, .link-btn, .coach-bubble, .footer-quote { display: none !important; }
   .view-toggle { display: none; }
   .tab { display: none; }
-  main > section.page { display: block !important; }
+  main > .page { display: block !important; }
   .page-nav { display: none !important; }
   section { box-shadow: none; border: 1px solid #ccc; page-break-inside: avoid; }
   .player-card.absent { display: none; }
@@ -3452,7 +3458,8 @@ footer > * { max-width: 720px; margin-left: auto; margin-right: auto; }
   border: 1px solid rgba(15, 23, 42, 0.08);
   border-radius: 14px;
   padding: 0.75rem 0.875rem 0.75rem 1.125rem;
-  margin-bottom: 0.875rem;
+  /* Standalone card now — the page wrapper's grid gap provides spacing. */
+  margin-bottom: 0;
   position: relative;
   overflow: hidden;
 }
@@ -3472,14 +3479,19 @@ footer > * { max-width: 720px; margin-left: auto; margin-right: auto; }
   gap: 0.75rem;
   flex-wrap: wrap;
 }
-/* "Current Game" headline — same large bold treatment as "Today's Roster". */
+/* "Current Game" headline — same size as the "Today's Roster" h2,
+   tracking the h2 size at every breakpoint. */
 .cgb-title {
   margin: 0;
-  font-size: 1.5rem;
+  font-size: 2.875rem;
   font-weight: 900;
-  letter-spacing: -0.01em;
+  letter-spacing: 0.015em;
+  text-transform: uppercase;
   color: var(--navy-dark);
-  line-height: 1.05;
+  line-height: 1.02;
+}
+@media (max-width: 600px) {
+  .cgb-title { font-size: 2.25rem; }
 }
 /* Single-line matchup row right below the title. Shrinks the font on tighter
    screens before truncating with ellipsis so both team names stay readable. */
@@ -3506,7 +3518,8 @@ footer > * { max-width: 720px; margin-left: auto; margin-right: auto; }
   display: inline-flex;
   align-items: baseline;
   gap: 0.45rem;
-  font-size: 1.2rem;
+  /* Big date — the coach should be able to read it at a glance. */
+  font-size: 2rem;
   font-weight: 800;
   color: var(--navy-dark);
   cursor: pointer;
@@ -3515,7 +3528,7 @@ footer > * { max-width: 720px; margin-left: auto; margin-right: auto; }
   flex-shrink: 0;
 }
 .cgb-date-pill .cgb-d { font-size: inherit; }
-.cgb-date-pill .cgb-m { color: var(--gray-500); font-weight: 700; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.08em; }
+.cgb-date-pill .cgb-m { color: var(--gray-500); font-weight: 700; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 0.08em; }
 .cgb-date-pill input.cgb-date-input {
   position: absolute;
   inset: 0;
@@ -3686,10 +3699,10 @@ footer > * { max-width: 720px; margin-left: auto; margin-right: auto; }
 /* Desktop: bump the headline up another notch. */
 @media (min-width: 720px) {
   .current-game-banner { padding: 1.1rem 1.25rem 1.1rem 1.5rem; gap: 0.4rem; }
-  .cgb-title { font-size: 2rem; }
+  .cgb-title { font-size: 3.25rem; }
   .cgb-matchup-line { font-size: 1.15rem; }
-  .cgb-date-pill { font-size: 1.45rem; gap: 0.45rem; }
-  .cgb-date-pill .cgb-m { font-size: 1rem; }
+  .cgb-date-pill { font-size: 2.4rem; gap: 0.45rem; }
+  .cgb-date-pill .cgb-m { font-size: 1.3rem; }
   .cgb-actions-status {
     font-size: 0.78rem;
     padding: 0.45rem 0.95rem;
@@ -3844,6 +3857,31 @@ button, .outs-btn, .sc-btn, .cgb-action, [role="button"] {
   .scorecard-name { font-size: 1rem; }
 }
 
+/* Inline assists/outs steppers on the fielding rows (replaces the
+   standalone Scorecard page). Sits as a full-width second row under the
+   position/player line. */
+.defense-stats {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.2rem 0 0.25rem;
+}
+.ds-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+.ds-label {
+  font-size: 0.66rem;
+  font-weight: 800;
+  color: var(--gray-500);
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  margin-right: 0.1rem;
+}
+
 /* ============ Bench block ============ */
 .bench-block {
   margin-top: 1rem;
@@ -3862,18 +3900,22 @@ button, .outs-btn, .sc-btn, .cgb-action, [role="button"] {
 }
 .bench-list {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  /* Wide enough for a name plus the assists/outs steppers. */
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
   gap: 0.5rem;
 }
 .bench-row {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 0.3rem;
   background: white;
   border: 1.5px solid #DDC58F;
-  border-radius: 999px;
+  border-radius: 14px;
   padding: 0.5rem 0.875rem;
 }
+.bench-row .defense-stats { width: 100%; padding: 0; }
 .bench-name {
   font-weight: 800;
   font-size: 1rem;
@@ -4034,15 +4076,12 @@ button, .outs-btn, .sc-btn, .cgb-action, [role="button"] {
     <i class="nav-icon fa-solid fa-mitten" aria-hidden="true"></i>
     <span class="nav-label">Fielding</span>
   </button>
-  <button data-page="score">
-    <i class="nav-icon fa-solid fa-chart-simple" aria-hidden="true"></i>
-    <span class="nav-label">Score</span>
-  </button>
 </nav>
 
 <main>
-  <section id="rosterPage" class="page active">
+  <div id="rosterPage" class="page active">
     <div class="current-game-banner" id="currentGameBanner" style="display:none"></div>
+    <section>
     <h2>Today's Roster</h2>
     <div class="roster-body" id="rosterBody">
       <div class="roster-grid" id="rosterGrid"></div>
@@ -4062,8 +4101,10 @@ button, .outs-btn, .sc-btn, .cgb-action, [role="button"] {
         <i class="fa-solid fa-pen"></i>
       </button>
     </div>
+    </section>
 
-    <h2 class="stacked-heading section-heading-row">
+    <section>
+    <h2 class="section-heading-row">
       <span>Schedule</span>
       <button class="rotation-shuffle-btn" id="scheduleAddBtn" type="button" aria-label="Add game">
         <i class="fa-solid fa-plus" aria-hidden="true"></i>
@@ -4075,7 +4116,8 @@ button, .outs-btn, .sc-btn, .cgb-action, [role="button"] {
     </div>
     <div id="scheduleListView" class="schedule-list-view"></div>
     <div id="scheduleCalendarView" class="schedule-calendar-view" hidden></div>
-  </section>
+    </section>
+  </div>
 
   <div class="modal-overlay" id="rosterModalOverlay" hidden>
     <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="rosterModalTitle">
@@ -4110,10 +4152,21 @@ button, .outs-btn, .sc-btn, .cgb-action, [role="button"] {
   <section id="fieldingPage" class="page">
     <h2 class="section-heading-row">
       <span>Field Positions <span class="heading-date" id="fieldingDate"></span></span>
+      <span class="sync-status" id="syncStatus" aria-live="polite"></span>
+      <button class="rotation-shuffle-btn" id="scoreRefreshBtn" type="button" aria-label="Sync with cloud" title="Push local changes, then pull the latest">
+        <i class="fa-solid fa-arrows-rotate" aria-hidden="true"></i>
+      </button>
       <button class="rotation-shuffle-btn" id="rotationShuffleBtn" type="button" aria-label="Shuffle all innings">
         <i class="fa-solid fa-shuffle" aria-hidden="true"></i>
       </button>
     </h2>
+    <div class="outs-section outs-readonly" id="outsSection">
+      <div class="outs-display">
+        <div class="outs-label">Team Outs</div>
+        <div class="outs-value" id="outsValue">0</div>
+        <div class="outs-sublabel">Sum of every player's outs</div>
+      </div>
+    </div>
     <div id="rotationNote"></div>
     <div class="inning-tabs" id="inningTabs"></div>
     <div id="inningContent"></div>
@@ -4126,29 +4179,6 @@ button, .outs-btn, .sc-btn, .cgb-action, [role="button"] {
     </div>
   </section>
 
-  <section id="scorePage" class="page">
-    <h2 class="section-heading-row">
-      <span>Scorecard <span class="heading-date" id="scorecardDate"></span></span>
-      <span class="sync-status" id="syncStatus" aria-live="polite"></span>
-      <button class="rotation-shuffle-btn" id="scoreRefreshBtn" type="button" aria-label="Sync with cloud" title="Push local changes, then pull the latest">
-        <i class="fa-solid fa-arrows-rotate" aria-hidden="true"></i>
-      </button>
-    </h2>
-    <div class="outs-section outs-readonly" id="outsSection">
-      <div class="outs-display">
-        <div class="outs-label">Team Outs</div>
-        <div class="outs-value" id="outsValue">0</div>
-        <div class="outs-sublabel">Sum of every player's outs</div>
-      </div>
-    </div>
-    <div class="scorecard-header">
-      <span></span><!-- icon column -->
-      <span></span><!-- name column -->
-      <span>Assists</span>
-      <span>Outs</span>
-    </div>
-    <div class="scorecard-list" id="scorecardList"></div>
-  </section>
 </main>
 
 <footer>
@@ -6828,17 +6858,12 @@ function renderBatting() {
     list.innerHTML = '<li class="batting-row" style="background: #F8D7DA; color: #842029; border-color: #842029;">No players present — go find your team!</li>';
     return;
   }
-  const suffixes = ['LEADOFF', '', '', 'CLEANUP', '', '', '', '', 'CLOSER'];
-  list.innerHTML = present.map((player, i) => {
-    const suffix = suffixes[i] || '';
-    return `
+  list.innerHTML = present.map((player, i) => `
       <li class="batting-row" data-i="${i}" data-player="${escapeHtml(player)}">
         <div class="batting-num">${i + 1}</div>
         <span class="batting-name">${player}</span>
-        ${suffix ? `<span class="batting-suffix">${suffix}</span>` : ''}
       </li>
-    `;
-  }).join('');
+    `).join('');
 }
 
 // Drag a batting row up/down to reorder. Requires a long-press to start
@@ -6983,6 +7008,24 @@ function renderInnings() {
   const inning = result.rotation[state.currentInning - 1];
   const bench = inning._bench || [];
 
+  // Per-player assists/outs steppers, rendered right on the fielding
+  // rows — this replaced the standalone Scorecard page.
+  const statBlock = (player) => `
+        <div class="defense-stats">
+          <span class="ds-group">
+            <span class="ds-label">Assists</span>
+            <button class="sc-btn" data-action="dec" data-metric="assists" ${getStat(player, 'assists') <= 0 ? 'disabled' : ''}>−</button>
+            <span class="sc-value">${getStat(player, 'assists')}</span>
+            <button class="sc-btn" data-action="inc" data-metric="assists">+</button>
+          </span>
+          <span class="ds-group">
+            <span class="ds-label">Outs</span>
+            <button class="sc-btn" data-action="dec" data-metric="outs" ${getStat(player, 'outs') <= 0 ? 'disabled' : ''}>−</button>
+            <span class="sc-value">${getStat(player, 'outs')}</span>
+            <button class="sc-btn" data-action="inc" data-metric="outs">+</button>
+          </span>
+        </div>`;
+
   let html = '<div class="defense-list" data-fielding-zone="defense">';
   for (const pos of DEFENSE_LIST_ORDER) {
     if (!inning[pos]) continue;
@@ -7001,6 +7044,7 @@ function renderInnings() {
         <div class="defense-player-block">
           <div class="defense-player-name">${player}</div>
         </div>
+        ${statBlock(player)}
       </div>
     `;
   }
@@ -7012,6 +7056,7 @@ function renderInnings() {
       html += `
         <div class="bench-row" data-bench-idx="${idx}" data-player="${escapeHtml(player)}">
           <div class="bench-name">${player}</div>
+          ${statBlock(player)}
         </div>
       `;
     });
@@ -7101,6 +7146,8 @@ function bindFieldingDrag() {
     if (pending) { clearTimeout(pending.timer); pending = null; }
   }
   content.addEventListener('pointerdown', (e) => {
+    // Taps on the assists/outs steppers must never start a drag.
+    if (e.target.closest('button')) return;
     const row = findRow(e.target);
     if (!row) return;
     cancelPending();
@@ -7229,9 +7276,10 @@ function renderStats() {
   container.innerHTML = html;
 }
 
-// 'schedule' is no longer a page — its content lives on the roster page.
-// A stored page of 'schedule' falls through showPage's guard to 'roster'.
-const VALID_PAGES = ['roster', 'batting', 'fielding', 'score'];
+// 'schedule' and 'score' are no longer pages — schedule lives on the
+// roster page, scoring lives on the fielding rows. A stored page of
+// either falls through showPage's guard to 'roster'.
+const VALID_PAGES = ['roster', 'batting', 'fielding'];
 let userHasNavigated = false;
 function showPage(page, opts) {
   opts = opts || {};
@@ -7239,7 +7287,7 @@ function showPage(page, opts) {
   state.page = page;
   localStorage.setItem(tk('cardinals_page'), page);
   document.body.dataset.page = page;
-  document.querySelectorAll('main > section.page').forEach(s => {
+  document.querySelectorAll('main > .page').forEach(s => {
     s.classList.toggle('active', s.id === page + 'Page');
   });
   // Must mirror the CSS: iPads (touch-first, no hover) get the phone
@@ -7362,7 +7410,7 @@ function updateHeadingDates() {
   const cur = (typeof getGameById === 'function') ? getGameById(currentGameId) : null;
   let label = '';
   if (cur) { const d = fmtDateRow(cur.date); label = `${d.mon} ${d.day}`; }
-  ['battingDate', 'fieldingDate', 'scorecardDate'].forEach(id => {
+  ['battingDate', 'fieldingDate'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.textContent = label;
   });
@@ -7729,25 +7777,9 @@ function cloudBeaconScheduled() {
   cloudBeacon();
 }
 function renderScorecard() {
-  const container = document.getElementById('scorecardList');
-  container.innerHTML = ROSTER.map(player => `
-    <div class="scorecard-row" data-player="${player}">
-      <button class="bb-card-trigger" data-card-player="${player}" type="button" aria-label="Open baseball card for ${player}" title="Baseball card">
-        <i class="fa-solid fa-id-card" aria-hidden="true"></i>
-      </button>
-      <span class="scorecard-name">${player}</span>
-      <div class="scorecard-metric">
-        <button class="sc-btn" data-action="dec" data-metric="assists" ${getStat(player, 'assists') <= 0 ? 'disabled' : ''}>−</button>
-        <span class="sc-value">${getStat(player, 'assists')}</span>
-        <button class="sc-btn" data-action="inc" data-metric="assists">+</button>
-      </div>
-      <div class="scorecard-metric">
-        <button class="sc-btn" data-action="dec" data-metric="outs" ${getStat(player, 'outs') <= 0 ? 'disabled' : ''}>−</button>
-        <span class="sc-value">${getStat(player, 'outs')}</span>
-        <button class="sc-btn" data-action="inc" data-metric="outs">+</button>
-      </div>
-    </div>
-  `).join('');
+  // The standalone Scorecard page is gone — per-player assists/outs now
+  // render on the fielding rows (renderInnings). This stays as the
+  // re-render hook callers already use; it just refreshes Team Outs.
   renderTeamOuts();
 }
 function computeTeamOuts() {
@@ -7765,22 +7797,24 @@ function renderTeamOuts() {
     el.classList.add('bumped');
   }
 }
-document.getElementById('scorecardList').addEventListener('click', (e) => {
+// Assists/outs steppers live on the fielding rows now.
+document.getElementById('inningContent').addEventListener('click', (e) => {
   const btn = e.target.closest('.sc-btn');
   if (!btn) return;
-  const row = btn.closest('.scorecard-row');
+  const row = btn.closest('[data-player]');
   if (!row) return;
   const player = row.dataset.player;
   const metric = btn.dataset.metric;
   const action = btn.dataset.action;
   const current = getStat(player, metric);
   setStat(player, metric, action === 'inc' ? current + 1 : current - 1);
-  renderScorecard();
+  renderInnings();
+  renderTeamOuts();
   if (metric === 'outs' && action === 'inc' && computeTeamOuts() % 3 === 0) {
     showBubble("3 outs — switch sides! ⚾");
   }
 });
-renderScorecard();
+renderTeamOuts();
 
 // Innings fixed at 4 — gameInnings already initialized above.
 
@@ -7973,33 +8007,11 @@ document.addEventListener('keydown', (e) => {
   }
 });
 
-// Triple-tap any scorecard row → "RBI energy!" toast
-let scoreTapCount = 0, scoreTapPlayer = '', scoreTapTimer = null;
-document.getElementById('scorecardList').addEventListener('click', (e) => {
-  const name = e.target.closest('.scorecard-name');
-  if (!name) return;
-  const row = name.closest('.scorecard-row');
-  const player = row?.dataset.player;
-  if (!player) return;
-  if (scoreTapPlayer !== player) { scoreTapCount = 0; scoreTapPlayer = player; }
-  scoreTapCount++;
-  clearTimeout(scoreTapTimer);
-  scoreTapTimer = setTimeout(() => { scoreTapCount = 0; scoreTapPlayer = ''; }, 1500);
-  if (scoreTapCount >= 3) {
-    showBubble(`⭐ ${player} — that's a star!`);
-    name.animate(
-      [{ transform: 'scale(1)' }, { transform: 'scale(1.18)', color: 'var(--cardinal-red)' }, { transform: 'scale(1)' }],
-      { duration: 600 }
-    );
-    scoreTapCount = 0;
-  }
-});
-
-// Scorecard +/- click → flash the touched row briefly
-document.getElementById('scorecardList').addEventListener('click', (e) => {
+// Fielding +/- click → flash the touched row briefly
+document.getElementById('inningContent').addEventListener('click', (e) => {
   const btn = e.target.closest('.sc-btn');
   if (!btn) return;
-  const row = btn.closest('.scorecard-row');
+  const row = btn.closest('[data-player]');
   if (!row) return;
   row.animate(
     [{ background: 'var(--gray-50)' }, { background: '#FFE0E8' }, { background: 'var(--gray-50)' }],
