@@ -8,7 +8,7 @@
    - Pantry API calls  → bypassed entirely so syncs never get stuck
      on a stale cached response
 */
-const CACHE = 'tm-cache-v15-bb-cards-back';
+const CACHE = 'tm-cache-v16-no-repeat-rotation';
 
 const PRECACHE = [
   './',

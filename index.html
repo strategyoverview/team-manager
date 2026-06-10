@@ -958,6 +958,26 @@ main {
   /* Reserve enough room at the bottom for the floating nav PLUS the
      app-team-links pills and the glass sponsor strip beneath it. */
   body { padding-bottom: calc(192px + env(safe-area-inset-bottom)); }
+  /* Apple-style glass fade behind the floating nav: content blurs and
+     fades out as it scrolls under the pill so the nav always reads. */
+  body.is-app::after {
+    content: '';
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 140px;
+    pointer-events: none;
+    z-index: 99;
+    background: linear-gradient(to top,
+      rgba(255, 255, 255, 0.85) 0%,
+      rgba(255, 255, 255, 0.55) 45%,
+      transparent 100%);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    mask-image: linear-gradient(to top, black 50%, transparent 100%);
+    -webkit-mask-image: linear-gradient(to top, black 50%, transparent 100%);
+  }
   body.is-app > .app-team-links,
   body.is-app > .sponsor-strip-wrap { position: relative; z-index: 2; }
 
@@ -1195,10 +1215,11 @@ h2 .badge {
   .roster-grid { grid-template-columns: repeat(3, 1fr); gap: 0.75rem; }
 }
 @media (min-width: 768px) {
-  .roster-grid { grid-template-columns: repeat(4, 1fr); gap: 1rem; }
+  /* 3-up on iPad so longer names don't collide with the checkmark. */
+  .roster-grid { grid-template-columns: repeat(3, 1fr); gap: 1rem; }
 }
 @media (min-width: 1024px) {
-  .roster-grid { grid-template-columns: repeat(5, 1fr); }
+  .roster-grid { grid-template-columns: repeat(4, 1fr); }
 }
 
 .roster-empty {
@@ -1380,14 +1401,14 @@ h2 .badge {
   display: flex;
   align-items: center;
   gap: 0.625rem;
-  padding: 0.35rem 0.75rem;
+  padding: 0.5rem 0.75rem;
   background: rgba(255, 255, 255, 0.7);
   border: 1.5px solid rgba(15, 23, 42, 0.08);
   border-radius: 14px;
   font-weight: 700;
   counter-increment: bat;
   transition: all 0.15s ease;
-  min-height: 44px;
+  min-height: 52px;
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   width: 100%;
@@ -1656,13 +1677,13 @@ h2 .badge {
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.25rem 0.625rem;
+  padding: 0.45rem 0.625rem;
   background: rgba(255, 255, 255, 0.6);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   border: 1.5px solid rgba(15, 23, 42, 0.05);
   border-radius: 12px;
-  min-height: 40px;
+  min-height: 52px;
   transition: all 0.15s ease;
   box-shadow: 0 1px 0 rgba(255, 255, 255, 0.5) inset;
   width: 100%;
@@ -1701,27 +1722,17 @@ h2 .badge {
 .bench-row.dragging { cursor: grabbing; opacity: 0.55; }
 .bench-row.drop-target { outline: 3px dashed var(--cardinal-red); outline-offset: -3px; }
 .defense-row:hover { transform: translateX(2px); }
-.defense-row.premium {
-  background: linear-gradient(95deg, #DCF6E4 0%, #EEFAF1 60%);
-  border-color: #1F9B4D;
-  border-left: 8px solid #1F9B4D;
-  padding-left: calc(1rem - 6px);
-}
-.defense-row.premium .defense-pos-abbr {
-  color: #135E2C;
-  background: #C6EFD3;
-  border-color: #1F9B4D;
-}
+/* Premium rows look like every other row — the green tint cluttered
+   the list. The .premium class still drives the rotation logic and
+   the summary pills. */
 .defense-row.outfield {
   background: white;
   border-color: var(--gray-300);
-  border-left: 8px solid var(--gray-300);
-  padding-left: calc(1rem - 6px);
 }
 
 @media (min-width: 768px) {
-  /* Compact rows so all ten positions fit one iPad screen. */
-  .defense-row { padding: 0.5rem 1.25rem; min-height: 56px; }
+  /* Same height as batting rows — fills the page without overflowing. */
+  .defense-row { padding: 0.75rem 1.25rem; min-height: 64px; }
 }
 
 .defense-pos-block {
@@ -1829,10 +1840,10 @@ h2 .badge {
 .stats-table th {
   font-weight: 800;
   color: var(--navy);
-  font-size: 0.78rem;
+  font-size: 0.95rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  background: var(--gray-50);
+  background: white;
   white-space: nowrap;
 }
 .stats-table th:not(:first-child), .stats-table td:not(:first-child) {
@@ -1857,7 +1868,7 @@ h2 .badge {
   .stats-table .player-cell, .stats-table .player-name-cell { font-size: 1.4rem; }
 }
 .stats-table .pos-pill { font-size: 0.95rem; padding: 4px 10px; min-width: 42px; }
-.stats-table th { font-size: 0.7rem; padding: 0.35rem 0.3rem; }
+.stats-table th { font-size: 0.85rem; padding: 0.4rem 0.3rem; }
 .stats-table th, .stats-table td { white-space: nowrap; }
 .stats-table th:first-child, .stats-table td:first-child { width: 1%; padding-right: 0.75rem; }
 .stats-table th:not(:first-child), .stats-table td:not(:first-child) { padding: 0.4rem 0.3rem; }
@@ -2274,6 +2285,15 @@ footer > * { max-width: 720px; margin-left: auto; margin-right: auto; }
 }
 .roster-icon-btn:active { transform: scale(0.95); }
 
+.rotation-shuffle-btn.btn-labeled {
+  width: auto;
+  border-radius: 999px;
+  padding: 0 0.875rem;
+  gap: 0.4rem;
+  font-weight: 800;
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
 .rotation-shuffle-btn {
   display: inline-flex;
   align-items: center;
@@ -3524,7 +3544,9 @@ footer > * { max-width: 720px; margin-left: auto; margin-right: auto; }
   line-height: 1.02;
 }
 @media (max-width: 600px) {
-  .cgb-title { font-size: 2.25rem; }
+  /* Small enough that the title and the game date share one line. */
+  .cgb-title { font-size: 1.5rem; }
+  .cgb-date-pill { font-size: 1.5rem; }
 }
 /* Single-line matchup row right below the title. Shrinks the font on tighter
    screens before truncating with ellipsis so both team names stay readable. */
@@ -3551,17 +3573,17 @@ footer > * { max-width: 720px; margin-left: auto; margin-right: auto; }
   display: inline-flex;
   align-items: baseline;
   gap: 0.45rem;
-  /* Big date — the coach should be able to read it at a glance. */
-  font-size: 2.75rem;
-  font-weight: 800;
-  color: var(--navy-dark);
+  /* Same treatment as the batting/fielding heading dates: "Jun 7" in
+     the team red, sized to the title. */
+  font-size: 2.875rem;
+  font-weight: 700;
+  color: var(--cardinal-red);
   cursor: pointer;
   position: relative;
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
   flex-shrink: 0;
 }
-.cgb-date-pill .cgb-d { font-size: inherit; }
-.cgb-date-pill .cgb-m { color: var(--gray-500); font-weight: 700; font-size: 1.4rem; text-transform: uppercase; letter-spacing: 0.08em; }
 .cgb-date-pill input.cgb-date-input {
   position: absolute;
   inset: 0;
@@ -3748,7 +3770,6 @@ footer > * { max-width: 720px; margin-left: auto; margin-right: auto; }
   .cgb-title { font-size: 3.25rem; }
   .cgb-matchup-line { font-size: 1.5rem; }
   .cgb-date-pill { font-size: 3.25rem; gap: 0.45rem; }
-  .cgb-date-pill .cgb-m { font-size: 1.6rem; }
   .cgb-actions-status {
     font-size: 0.78rem;
     padding: 0.45rem 0.95rem;
@@ -3873,16 +3894,13 @@ button, .outs-btn, .sc-btn, .cgb-action, [role="button"] {
   box-shadow: 0 1px 3px rgba(15,23,42,0.08);
 }
 .sc-btn[data-action="dec"]:hover { background: var(--gray-200); }
-/* Plus = soft team-background tint with the team color as the plus icon */
+/* Plus = same quiet gray pill as the minus, just cleaner. */
 .sc-btn[data-action="inc"] {
-  background: var(--team-tint, #D6F3FB);
-  color: var(--cardinal-red);
-  border: 1.5px solid color-mix(in srgb, var(--cardinal-red) 22%, transparent);
+  background: var(--gray-100);
+  color: var(--gray-500);
   box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
 }
-.sc-btn[data-action="inc"]:hover {
-  background: color-mix(in srgb, var(--team-tint, #D6F3FB) 80%, var(--cardinal-red) 6%);
-}
+.sc-btn[data-action="inc"]:hover { background: var(--gray-200); }
 .sc-btn:active { transform: scale(0.9); }
 .sc-btn:disabled { opacity: 0.35; cursor: not-allowed; box-shadow: none; }
 .sc-value {
@@ -3944,6 +3962,13 @@ button, .outs-btn, .sc-btn, .cgb-action, [role="button"] {
   align-items: center;
   justify-content: center;
   gap: 0.3rem;
+}
+@media (min-width: 768px) {
+  /* Wider gap between the Assists and Outs columns on iPad so the two
+     stat groups read as clearly separate. */
+  .score-header, .score-row { grid-template-columns: auto minmax(0, 1fr) 120px 3.5rem 120px; }
+  .score-header span:nth-child(4),
+  .score-row .score-metric + .score-metric { grid-column: 5; }
 }
 @media (max-width: 600px) {
   /* Tighter metric columns on phones so full first names fit. */
@@ -4160,6 +4185,9 @@ button, .outs-btn, .sc-btn, .cgb-action, [role="button"] {
     <h2 class="section-heading-row">
       <span>Today's Roster</span>
       <span class="roster-count"><span id="presentCount">9</span>/<span id="totalCount">9</span></span>
+      <button class="rotation-shuffle-btn" id="rosterEditBtn" type="button" aria-label="Edit roster" title="Edit roster">
+        <i class="fa-solid fa-pen"></i>
+      </button>
     </h2>
     <div class="roster-body" id="rosterBody">
       <div class="roster-grid" id="rosterGrid"></div>
@@ -4168,29 +4196,16 @@ button, .outs-btn, .sc-btn, .cgb-action, [role="button"] {
       </div>
     </div>
     <input type="file" id="logoInput" class="hidden-input" accept="image/*">
-    <div class="roster-actions">
-      <button class="roster-icon-btn" id="rosterAddBtnIcon" aria-label="Add player" title="Add player">
-        <i class="fa-solid fa-plus"></i>
-      </button>
-      <button class="roster-icon-btn" id="rosterEditBtn" aria-label="Edit roster" title="Edit roster">
-        <i class="fa-solid fa-pen"></i>
-      </button>
-    </div>
     </section>
 
     <section>
     <h2 class="section-heading-row">
       <span>Schedule</span>
-      <button class="rotation-shuffle-btn" id="scheduleAddBtn" type="button" aria-label="Add game">
-        <i class="fa-solid fa-plus" aria-hidden="true"></i>
+      <button class="rotation-shuffle-btn btn-labeled" id="scheduleAddBtn" type="button" aria-label="Add game">
+        <i class="fa-solid fa-plus" aria-hidden="true"></i> Add Game
       </button>
     </h2>
-    <div class="schedule-view-toggle" id="scheduleViewToggle">
-      <button data-view="list" class="active">List</button>
-      <button data-view="calendar">Calendar</button>
-    </div>
-    <div id="scheduleListView" class="schedule-list-view"></div>
-    <div id="scheduleCalendarView" class="schedule-calendar-view" hidden></div>
+    <div id="scheduleCalendarView" class="schedule-calendar-view"></div>
     </section>
   </div>
 
@@ -4426,6 +4441,7 @@ button, .outs-btn, .sc-btn, .cgb-action, [role="button"] {
     </div>
     <div class="modal-footer">
       <button class="modal-btn-danger" id="gameModalDeleteBtn" type="button" hidden>Delete</button>
+      <button class="modal-btn-secondary" id="gameModalRecapBtn" type="button" hidden>Recap</button>
       <button class="modal-btn-secondary" id="gameModalCancelBtn" type="button">Cancel</button>
       <button class="modal-btn-primary" id="gameModalSaveBtn" type="button">Save</button>
     </div>
@@ -5419,70 +5435,13 @@ function fmtDateRow(dk) {
   return { day: String(d.getDate()), mon: MONTH_LABELS[d.getMonth()] };
 }
 
-let scheduleView = 'list'; // 'list' | 'calendar'
 let calendarMonth = null;  // YYYY-MM, set on first calendar render
 
+// The schedule is calendar-only — the old list view and toggle are gone.
 function renderSchedule() {
-  const listEl = document.getElementById('scheduleListView');
   const calEl = document.getElementById('scheduleCalendarView');
-  if (!listEl || !calEl) return;
-  const toggle = document.getElementById('scheduleViewToggle');
-  if (toggle) {
-    toggle.querySelectorAll('button').forEach(b => b.classList.toggle('active', b.dataset.view === scheduleView));
-  }
-  listEl.hidden = scheduleView !== 'list';
-  calEl.hidden = scheduleView !== 'calendar';
-  if (scheduleView === 'list') renderScheduleList();
-  else renderScheduleCalendar();
-}
-
-function renderScheduleList() {
-  const listEl = document.getElementById('scheduleListView');
-  const games = loadGames();
-  if (!games.length) {
-    listEl.innerHTML = '<div class="schedule-empty">No games yet. Tap the + above to add one.</div>';
-    return;
-  }
-  // Newest games at the top (descending by date) so the most recent /
-  // upcoming games lead — June above May, etc.
-  const ordered = games.slice().sort((a, b) => b.date.localeCompare(a.date) || (b.id - a.id));
-  // Group by month (insertion order is already newest-first)
-  const byMonth = new Map();
-  for (const g of ordered) {
-    const key = g.date.slice(0, 7);
-    if (!byMonth.has(key)) byMonth.set(key, []);
-    byMonth.get(key).push(g);
-  }
-  const currentId = currentGameId;
-  const html = [];
-  for (const [key, gs] of byMonth) {
-    html.push(`<div class="schedule-month"><div class="schedule-month-label">${fmtMonthYear(gs[0].date)}</div>`);
-    for (const g of gs) {
-      const status = gameStatus(g);
-      const isCurrent = String(g.id) === String(currentId);
-      const { day, mon } = fmtDateRow(g.date);
-      const colors = g.colors || {};
-      const styleVars = colors.primary ? `style="--opp-primary:${colors.primary}"` : '';
-      html.push(`
-        <div class="schedule-row${status === 'active' ? ' is-active' : ''}${isCurrent ? ' is-current' : ''}" data-game-id="${g.id}" ${styleVars}>
-          <div class="schedule-stripe" aria-hidden="true"></div>
-          <div class="schedule-date"><span class="schedule-date-day">${day}</span><span class="schedule-date-mon">${mon}</span></div>
-          <div class="schedule-row-main">
-            <div class="schedule-opponent">${g.opponent ? escapeHtml('vs ' + g.opponent) : 'Game'}</div>
-            <span class="schedule-status ${status}">${statusLabel(status)}</span>
-            ${g.notes ? `<div class="schedule-notes">${escapeHtml(g.notes)}</div>` : ''}
-          </div>
-          <div class="schedule-row-actions">
-            <button class="schedule-row-btn" data-action="overview" data-game-id="${g.id}" aria-label="Game overview" title="Game overview"><i class="fa-solid fa-eye"></i></button>
-            <button class="schedule-row-btn" data-action="edit" data-game-id="${g.id}" aria-label="Edit game" title="Edit"><i class="fa-solid fa-pen"></i></button>
-            <button class="schedule-row-btn danger" data-action="delete" data-game-id="${g.id}" aria-label="Delete game" title="Delete"><i class="fa-solid fa-trash"></i></button>
-          </div>
-        </div>
-      `);
-    }
-    html.push(`</div>`);
-  }
-  listEl.innerHTML = html.join('');
+  if (!calEl) return;
+  renderScheduleCalendar();
 }
 
 function renderScheduleCalendar() {
@@ -5589,6 +5548,8 @@ function openGameModal(game, defaultDate) {
   document.getElementById('gameModalColorPrimary').value = colors.primary || '#1D4ED8';
   document.getElementById('gameModalColorPrimary').classList.toggle('is-empty', !colors.primary);
   document.getElementById('gameModalDeleteBtn').hidden = !game;
+  const recapBtn = document.getElementById('gameModalRecapBtn');
+  if (recapBtn) recapBtn.hidden = !game;
   // Status selector — only shown when editing. Three values:
   //   "auto"     → no override; status derives from the date
   //   "active"   → forced Active (e.g. reopen a past game to keep scoring)
@@ -6134,33 +6095,12 @@ function bindScoreRefresh() {
 
 function bindScheduleUi() {
   document.getElementById('scheduleAddBtn')?.addEventListener('click', () => openGameModal(null));
-  document.getElementById('scheduleViewToggle')?.addEventListener('click', (e) => {
-    const btn = e.target.closest('button[data-view]');
-    if (!btn) return;
-    scheduleView = btn.dataset.view;
-    renderSchedule();
-  });
-  document.getElementById('scheduleListView')?.addEventListener('click', (e) => {
-    const actionBtn = e.target.closest('button[data-action][data-game-id]');
-    if (actionBtn) {
-      e.stopPropagation();
-      const g = getGameById(actionBtn.dataset.gameId);
-      if (!g) return;
-      if (actionBtn.dataset.action === 'overview') openGameOverview(g);
-      else if (actionBtn.dataset.action === 'edit') openGameModal(g);
-      else if (actionBtn.dataset.action === 'delete') {
-        const label = g.opponent ? `vs ${g.opponent} on ${g.date}` : `game on ${g.date}`;
-        if (confirm(`Delete ${label}? This can't be undone.`)) {
-          editingGameId = g.id;
-          deleteGameFromModal();
-        }
-      }
-      return;
-    }
-    const row = e.target.closest('.schedule-row[data-game-id]');
-    if (!row) return;
-    const g = getGameById(row.dataset.gameId);
-    if (g) openGameModal(g);
+  // The list view is gone — the game recap opens from the Edit Game modal.
+  document.getElementById('gameModalRecapBtn')?.addEventListener('click', () => {
+    const g = getGameById(editingGameId);
+    if (!g) return;
+    closeGameModal();
+    openGameOverview(g);
   });
   document.getElementById('gameModalCloseBtn')?.addEventListener('click', closeGameModal);
   document.getElementById('gameModalCancelBtn')?.addEventListener('click', closeGameModal);
@@ -6221,8 +6161,7 @@ function renderCurrentGameBanner() {
     <div class="cgb-header">
       <h2 class="cgb-title">Current Game</h2>
       <span class="cgb-date-pill" title="Tap to change date">
-        <span class="cgb-d">${day}</span>
-        <span class="cgb-m">${mon}</span>
+        ${mon} ${day}
         <input type="date" id="cgbDateInput" class="cgb-date-input" value="${cur.date}" aria-label="Change game date">
       </span>
     </div>
@@ -6880,32 +6819,63 @@ function generateRotation(presentList, opts) {
         return stats[p].premiumCount >= cap;
       }
 
+      // Eligibility relaxes in stages. "One position per game" is the
+      // rule coaches care about most, so it outlives the soft premium
+      // cap — only cap=0 (an explicit "never play premium") and a
+      // genuinely impossible arrangement can break it.
+      const noRepeat = p => !stats[p].positions.has(pos);
       let eligible = fielders.filter(p =>
-        !used.has(p) && !stats[p].positions.has(pos) && !atPremiumCap(p)
+        !used.has(p) && noRepeat(p) && !atPremiumCap(p)
       );
+      // Stage 2: relax the soft cap, keep no-repeat (cap=0 stays hard).
       if (!eligible.length) {
-        eligible = fielders.filter(p => !used.has(p) && !atPremiumCap(p));
+        eligible = fielders.filter(p =>
+          !used.has(p) && noRepeat(p) && !permanentlyNoPrem(p)
+        );
       }
-      // Relax the soft cap if every fielder with capacity has already
-      // been placed, but still respect cap=0 (those players never
-      // play premium regardless of slot shortage).
+      // Stage 3: nobody unused can take this position fresh. Run an
+      // augmenting search (Kuhn's matching): reshuffle this inning's
+      // already-filled slots along a chain so every slot — including
+      // this one — still gets a player who hasn't played it this game.
+      // Guaranteed to find a repeat-free arrangement when one exists.
+      if (!eligible.length) {
+        const slotOf = {};
+        for (const q of positions) if (assign[q]) slotOf[assign[q]] = q;
+        const canTake = (p, q) =>
+          !stats[p].positions.has(q) && !(PREMIUM.includes(q) && capFor(p) === 0);
+        const applyAssign = (q, p) => {
+          assign[q] = p; used.add(p); slotOf[p] = q;
+          stats[p].positions.add(q);
+          if (PREMIUM.includes(q)) stats[p].premiumCount++;
+          if (OUTFIELD.includes(q)) stats[p].outfieldCount++;
+        };
+        const removeAssign = (q, p) => {
+          delete assign[q]; used.delete(p); delete slotOf[p];
+          stats[p].positions.delete(q);
+          if (PREMIUM.includes(q)) stats[p].premiumCount--;
+          if (OUTFIELD.includes(q)) stats[p].outfieldCount--;
+        };
+        const place = (q, visited) => {
+          for (const p of fielders) {
+            if (visited.has(p) || !canTake(p, q)) continue;
+            visited.add(p);
+            const cur = slotOf[p];
+            if (cur === undefined) { applyAssign(q, p); return true; }
+            removeAssign(cur, p);
+            if (place(cur, visited)) { applyAssign(q, p); return true; }
+            applyAssign(cur, p); // dead end — put p back
+          }
+          return false;
+        };
+        if (place(pos, new Set())) continue; // pos filled (stats updated)
+      }
+      // Stage 4: no repeat-free arrangement reachable — allow a repeat
+      // rather than leave the position (e.g. the pitcher) empty.
+      // cap=0 is still respected until there is literally no one else.
       if (!eligible.length) {
         eligible = fielders.filter(p => !used.has(p) && !permanentlyNoPrem(p));
       }
-      // Final safety net: an inning must never leave the pitcher (or any
-      // other position) unassigned. If the cap rules have completely
-      // exhausted the eligible pool, fall back to any unused fielder —
-      // we'd rather break the soft cap than send the team out without
-      // a P. cap=0 is still respected; that's a hard "never play premium"
-      // rule the coach set explicitly.
       if (!eligible.length) {
-        eligible = fielders.filter(p => !used.has(p) && !permanentlyNoPrem(p));
-      }
-      if (!eligible.length) {
-        // Last possible fallback — pick literally any unused fielder.
-        // Only reachable when the only remaining unused players have
-        // cap=0 for this premium position; better to break that rule
-        // than to leave the pitcher empty.
         eligible = fielders.filter(p => !used.has(p));
       }
       if (!eligible.length) continue;
