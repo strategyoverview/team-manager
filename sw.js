@@ -8,7 +8,7 @@
    - Pantry API calls  → bypassed entirely so syncs never get stuck
      on a stale cached response
 */
-const CACHE = 'tm-cache-v13-fielding-cards';
+const CACHE = 'tm-cache-v14-score-card-nav';
 
 const PRECACHE = [
   './',
